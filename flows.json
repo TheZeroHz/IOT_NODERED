@@ -1,0 +1,378 @@
+[
+    {
+        "id": "a1a1a1a1a1a1a1a1",
+        "type": "tab",
+        "label": "Landslide IoT Flow",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "84f3180886113f96",
+        "type": "tab",
+        "label": "Landslide HTTP Firebase",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "aaaa9999aaaa9999",
+        "type": "ui_tab",
+        "name": "Landslide IoT",
+        "icon": "dashboard",
+        "order": 1,
+        "disabled": false,
+        "hidden": false
+    },
+    {
+        "id": "9999aaaa9999aaaa",
+        "type": "ui_group",
+        "name": "Landslide Dashboard",
+        "tab": "aaaa9999aaaa9999",
+        "order": 1,
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "baa05a4c606c7acb",
+        "type": "ui_base",
+        "theme": {
+            "name": "theme-light",
+            "lightTheme": {
+                "default": "#0094CE",
+                "baseColor": "#0094CE",
+                "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif",
+                "edited": false
+            },
+            "darkTheme": {
+                "default": "#097479",
+                "baseColor": "#097479",
+                "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif",
+                "edited": false
+            },
+            "customTheme": {
+                "name": "Untitled Theme 1",
+                "default": "#4B7930",
+                "baseColor": "#4B7930",
+                "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif"
+            },
+            "themeState": {
+                "base-color": {
+                    "default": "#0094CE",
+                    "value": "#0094CE",
+                    "edited": false
+                },
+                "page-titlebar-backgroundColor": {
+                    "value": "#0094CE",
+                    "edited": false
+                },
+                "page-backgroundColor": {
+                    "value": "#fafafa",
+                    "edited": false
+                },
+                "page-sidebar-backgroundColor": {
+                    "value": "#ffffff",
+                    "edited": false
+                },
+                "group-textColor": {
+                    "value": "#1bbfff",
+                    "edited": false
+                },
+                "group-borderColor": {
+                    "value": "#ffffff",
+                    "edited": false
+                },
+                "group-backgroundColor": {
+                    "value": "#ffffff",
+                    "edited": false
+                },
+                "widget-textColor": {
+                    "value": "#111111",
+                    "edited": false
+                },
+                "widget-backgroundColor": {
+                    "value": "#0094ce",
+                    "edited": false
+                },
+                "widget-borderColor": {
+                    "value": "#ffffff",
+                    "edited": false
+                },
+                "base-font": {
+                    "value": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif"
+                }
+            },
+            "angularTheme": {
+                "primary": "indigo",
+                "accents": "blue",
+                "warn": "red",
+                "background": "grey",
+                "palette": "light"
+            }
+        },
+        "site": {
+            "name": "Node-RED Dashboard",
+            "hideToolbar": "false",
+            "allowSwipe": "false",
+            "lockMenu": "false",
+            "allowTempTheme": "true",
+            "dateFormat": "DD/MM/YYYY",
+            "sizes": {
+                "sx": 48,
+                "sy": 48,
+                "gx": 6,
+                "gy": 6,
+                "cx": 6,
+                "cy": 6,
+                "px": 0,
+                "py": 0
+            }
+        }
+    },
+    {
+        "id": "tab_dashboard",
+        "type": "ui_tab",
+        "name": "Landslide IoT",
+        "icon": "dashboard",
+        "order": 1
+    },
+    {
+        "id": "group_dashboard",
+        "type": "ui_group",
+        "name": "Landslide Dashboard",
+        "tab": "tab_dashboard",
+        "order": 1,
+        "disp": true,
+        "width": 6,
+        "collapse": false
+    },
+    {
+        "id": "inject_sensor",
+        "type": "inject",
+        "z": "a1a1a1a1a1a1a1a1",
+        "name": "Simulated Sensor Data",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "5",
+        "crontab": "",
+        "once": true,
+        "onceDelay": "2",
+        "topic": "",
+        "payload": "{\"moisture\":40,\"tilt\":5}",
+        "payloadType": "json",
+        "x": 140,
+        "y": 100,
+        "wires": [
+            [
+                "threshold_check"
+            ]
+        ]
+    },
+    {
+        "id": "threshold_check",
+        "type": "function",
+        "z": "a1a1a1a1a1a1a1a1",
+        "name": "Check Thresholds",
+        "func": "const moisture = msg.payload.moisture;\nconst tilt = msg.payload.tilt;\nconst moistureLimit = 60;\nconst tiltLimit = 15;\n\nmsg.status = (moisture > moistureLimit && tilt > tiltLimit) ? \"ALERT\" : \"NORMAL\";\nmsg.payload = {\n    moisture: moisture,\n    tilt: tilt,\n    status: msg.status\n};\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 360,
+        "y": 100,
+        "wires": [
+            [
+                "split_for_gauges",
+                "text_status",
+                "debug_log"
+            ]
+        ]
+    },
+    {
+        "id": "split_for_gauges",
+        "type": "function",
+        "z": "a1a1a1a1a1a1a1a1",
+        "name": "Split for Gauges",
+        "func": "// Split moisture and tilt for separate gauges\nreturn [\n  { payload: msg.payload.moisture },\n  { payload: msg.payload.tilt }\n];",
+        "outputs": 2,
+        "noerr": 0,
+        "x": 610,
+        "y": 100,
+        "wires": [
+            [
+                "gauge_moisture"
+            ],
+            [
+                "gauge_tilt"
+            ]
+        ]
+    },
+    {
+        "id": "text_status",
+        "type": "ui_text",
+        "z": "a1a1a1a1a1a1a1a1",
+        "group": "group_dashboard",
+        "order": 1,
+        "width": 6,
+        "height": 1,
+        "name": "Alert Status Text",
+        "label": "Landslide Risk Status",
+        "format": "{{msg.payload.status}}",
+        "layout": "row-spread",
+        "x": 630,
+        "y": 40,
+        "wires": []
+    },
+    {
+        "id": "gauge_moisture",
+        "type": "ui_gauge",
+        "z": "a1a1a1a1a1a1a1a1",
+        "name": "Gauge Moisture",
+        "group": "group_dashboard",
+        "order": 4,
+        "width": 6,
+        "height": 3,
+        "gtype": "donut",
+        "title": "Soil Moisture (%)",
+        "label": "moisture",
+        "format": "{{value}}",
+        "min": 0,
+        "max": 100,
+        "colors": [
+            "#00b0ff",
+            "#f0ad4e",
+            "#d9534f"
+        ],
+        "seg1": 60,
+        "seg2": 80,
+        "x": 870,
+        "y": 100,
+        "wires": []
+    },
+    {
+        "id": "gauge_tilt",
+        "type": "ui_gauge",
+        "z": "a1a1a1a1a1a1a1a1",
+        "name": "Gauge Tilt",
+        "group": "group_dashboard",
+        "order": 5,
+        "width": 6,
+        "height": 3,
+        "gtype": "donut",
+        "title": "Tilt Angle (°)",
+        "label": "tilt",
+        "format": "{{value}}",
+        "min": 0,
+        "max": 90,
+        "colors": [
+            "#5cb85c",
+            "#f0ad4e",
+            "#d9534f"
+        ],
+        "seg1": 15,
+        "seg2": 25,
+        "x": 870,
+        "y": 160,
+        "wires": []
+    },
+    {
+        "id": "debug_log",
+        "type": "debug",
+        "z": "a1a1a1a1a1a1a1a1",
+        "name": "Debug Log",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "x": 610,
+        "y": 160,
+        "wires": []
+    },
+    {
+        "id": "13645bcc07ed6027",
+        "type": "inject",
+        "z": "84f3180886113f96",
+        "name": "Simulated Sensor",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "5",
+        "once": true,
+        "onceDelay": 1,
+        "topic": "",
+        "payload": "{\"moisture\":65,\"tilt\":18}",
+        "payloadType": "json",
+        "x": 140,
+        "y": 80,
+        "wires": [
+            [
+                "a1d80cf3cdce0545"
+            ]
+        ]
+    },
+    {
+        "id": "a1d80cf3cdce0545",
+        "type": "function",
+        "z": "84f3180886113f96",
+        "name": "Check Thresholds",
+        "func": "const moisture = msg.payload.moisture;\nconst tilt = msg.payload.tilt;\nconst status = (moisture > 60 && tilt > 15) ? \"ALERT\" : \"NORMAL\";\n\nmsg.payload = {\n    moisture: moisture,\n    tilt: tilt,\n    status: status,\n    timestamp: new Date().toISOString()\n};\n\nreturn msg;",
+        "outputs": 1,
+        "x": 360,
+        "y": 80,
+        "wires": [
+            [
+                "666b84f59411bf91",
+                "b6493a4781e72fc1"
+            ]
+        ]
+    },
+    {
+        "id": "666b84f59411bf91",
+        "type": "http request",
+        "z": "84f3180886113f96",
+        "name": "POST to Firebase",
+        "method": "POST",
+        "ret": "txt",
+        "paytoqs": false,
+        "url": "https://dream-palace-37cf0-default-rtdb.firebaseio.com/landslide/readings.json",
+        "tls": "",
+        "persist": false,
+        "authType": "",
+        "x": 600,
+        "y": 80,
+        "wires": [
+            [
+                "d01ff5a52d4e1ea5"
+            ]
+        ]
+    },
+    {
+        "id": "b6493a4781e72fc1",
+        "type": "debug",
+        "z": "84f3180886113f96",
+        "name": "Payload Sent",
+        "active": true,
+        "console": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "x": 600,
+        "y": 140,
+        "wires": []
+    },
+    {
+        "id": "d01ff5a52d4e1ea5",
+        "type": "debug",
+        "z": "84f3180886113f96",
+        "name": "Firebase Response",
+        "active": true,
+        "console": false,
+        "complete": "true",
+        "x": 820,
+        "y": 80,
+        "wires": []
+    }
+]
